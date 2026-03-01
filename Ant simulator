@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ant Colony: Cloud Edition</title>
+    <!-- Importamos Firebase desde CDN -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com";
+
+        // CONFIGURACIÓN DE FIREBASE (Reemplaza esto con tus datos de Firebase Console)
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_PROYECTO.firebaseapp.com",
+            projectId: "TU_PROYECTO",
+            storageBucket: "TU_PROYECTO.appspot.com",
+            messagingSenderId: "TU_ID",
+            appId: "TU_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        let userData = { lvl: 1, xp: 0, food: 0, sp: '', rank: 'Nurse' };
+
+        // --- LÓGICA DE LOGIN ---
+        window.loginGoogle = async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                console.log("Conectado como:", user.displayName);
+                loadCloudData(user.uid);
+            } catch (error) {
+                console.error("Error en Login:", error);
+            }
+        };
+
+        async function loadCloudData(uid) {
+            const docRef = doc(db, "users", uid);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                userData = docSnap.data();
+                addLog(`☁️ Datos cargados de la nube. ¡Bienvenido de nuevo!`);
+            } else {
+                // Nuevo usuario: Regalo de 50 XP por usar Google
+                userData.xp = 50;
+                addLog("🎁 ¡Primera vez! +50 XP de regalo por usar tu cuenta Google.");
+                saveCloudData();
+            }
+            startGameUI();
+        }
+
+        window.saveCloudData = async () => {
+            if (auth.currentUser) {
+                await setDoc(doc(db, "users", auth.currentUser.uid), userData);
+                console.log("Sincronizado con la nube");
+            }
+        };
+
+        // --- LÓGICA DEL JUEGO ---
+        function startGameUI() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('game-ui').style.display = 'block';
+            updateUI();
+        }
+
+        window.doAction = (type) => {
+            userData.xp += 15;
+            userData.food += 5;
+            if(userData.xp >= 100 * Math.pow(userData.lvl, 1.5)) {
+                userData.lvl++;
+                userData.xp = 0;
+                addLog(`🎊 ¡NIVEL ${userData.lvl}!`, "gold");
+            }
+            updateUI();
+            saveCloudData(); // Auto-sincronización
+        };
+
+        function updateUI() {
+            document.getElementById('ui-lvl').innerText = userData.lvl;
+            document.getElementById('ui-food').innerText = userData.food;
+            document.getElementById('ui-xp').innerText = userData.xp;
+        }
+
+        function addLog(m, c="#00ff41") {
+            const l = document.getElementById('log');
+            l.innerHTML = `<span style="color:${c}">> ${m}</span><br>` + l.innerHTML;
+        }
+    </script>
+
+    <style>
+        body { background: #0a0a0a; color: white; font-family: sans-serif; text-align: center; }
+        .btn-google { background: #4285F4; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold; }
+        #game-ui { display: none; padding: 20px; }
+        #log { background: #000; height: 100px; overflow-y: auto; margin-top: 20px; border: 1px solid #333; padding: 10px; font-family: monospace; }
+        .stats { display: flex; justify-content: space-around; background: #1a1a1a; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla de Login -->
+    <div id="login-screen" style="margin-top: 20vh;">
+        <h1>🐜 ANT COLONY SIMULATOR</h1>
+        <p>Tu progreso se guardará en la nube automáticamente</p>
+        <button class="btn-google" onclick="loginGoogle()">Iniciar Sesión con Google</button>
+    </div>
+
+    <!-- Pantalla de Juego -->
+    <div id="game-ui">
+        <div class="stats">
+            <div>NIVEL: <b id="ui-lvl">1</b></div>
+            <div>XP: <b id="ui-xp">0</b></div>
+            <div>COMIDA: <b id="ui-food">0</b></div>
+        </div>
+        
+        <button onclick="doAction('trabajar')" style="padding:20px; width:200px; cursor:pointer;">⛏️ TRABAJAR</button>
+        
+        <div id="log">Esperando login...</div>
+    </div>
+
+</body>
+</html>
