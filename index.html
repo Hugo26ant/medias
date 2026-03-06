@@ -1,10 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora de Mates</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f0f2f5; display: flex; justify-content: center; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h2 { color: #1a73e8; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        .grupo { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #444; }
+        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { background: #1a73e8; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; }
+        #resultado { margin-top: 25px; padding: 20px; border-radius: 10px; text-align: center; font-size: 1.4em; font-weight: bold; display: none; }
+        .aprobado { background: #e6f4ea; color: #1e8e3e; display: block !important; border: 1px solid #1e8e3e; }
+        .suspenso { background: #fce8e6; color: #d93025; display: block !important; border: 1px solid #d93025; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Mates</h2>
+    <div class="grupo">
+        <label>Cuaderno (10% cada una)</label>
+        <input type="text" id="cuaderno" placeholder="Ej: 9 9">
+    </div>
+    <div class="grupo">
+        <label>Parciales (15% cada uno)</label>
+        <input type="text" id="parciales" placeholder="Ej: 6 4">
+    </div>
+    <div class="grupo">
+        <label>Trimestral (50%)</label>
+        <input type="text" id="trimestral" placeholder="Ej: 3.75">
+    </div>
+    <button onclick="calcular()">Calcular Nota Final</button>
+    <div id="resultado"></div>
+</div>
+
+<script>
 function procesarNotas(id) {
     const input = document.getElementById(id).value.trim();
     if (!input) return [];
-
-    // 1. Separamos por ESPACIOS para identificar notas diferentes
-    // 2. En cada nota, cambiamos la coma por punto para que sea decimal válido
-    return input.split(/\s+/) 
+    
+    // Separamos por espacios. Cada grupo de números puede tener coma o punto decimal.
+    return input.split(/\s+/)
                 .map(n => parseFloat(n.replace(',', '.')))
                 .filter(n => !isNaN(n));
 }
@@ -14,24 +52,22 @@ function calcular() {
     const notasParciales = procesarNotas('parciales');
     const notasTrimestral = procesarNotas('trimestral');
 
-    // REGLA: 10% (0.10) por CADA nota de cuaderno
+    // 10% por cada nota de cuaderno
     const puntosCuaderno = notasCuaderno.reduce((acc, n) => acc + (n * 0.10), 0);
-
-    // REGLA: 15% (0.15) por CADA nota de parcial
+    // 15% por cada nota de parcial
     const puntosParciales = notasParciales.reduce((acc, n) => acc + (n * 0.15), 0);
-
-    // REGLA: 50% (0.50) de la nota del trimestral (solo la primera)
+    // 50% de la primera nota del trimestral
     const notaTrimestral = notasTrimestral.length > 0 ? notasTrimestral[0] : 0;
     const puntosTrimestral = notaTrimestral * 0.50;
 
-    // Suma total
     const notaFinal = puntosCuaderno + puntosParciales + puntosTrimestral;
 
-    // Mostrar resultado
     const divRes = document.getElementById('resultado');
     divRes.style.display = 'block';
     divRes.innerHTML = `Nota Final: ${notaFinal.toFixed(2)}`;
-    
-    // Colores: Verde si es >= 5, rojo si es < 5
     divRes.className = notaFinal >= 5 ? 'aprobado' : 'suspenso';
 }
+</script>
+
+</body>
+</html>
