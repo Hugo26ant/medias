@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Calculadora Matemáticas 2º ESO</title>
+    <title>Calculadora Mates</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f0f2f5; display: flex; justify-content: center; }
         .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
@@ -10,10 +10,8 @@
         .grupo { margin-bottom: 20px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; }
         input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        input:focus { border-color: #1a73e8; outline: none; }
         small { color: #666; font-size: 0.85em; display: block; margin-bottom: 5px; }
-        button { background: #1a73e8; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; transition: 0.3s; }
-        button:hover { background: #1557b0; }
+        button { background: #1a73e8; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; }
         #resultado { margin-top: 25px; padding: 20px; border-radius: 10px; text-align: center; font-size: 1.4em; font-weight: bold; display: none; }
         .aprobado { background: #e6f4ea; color: #1e8e3e; display: block !important; border: 1px solid #1e8e3e; }
         .suspenso { background: #fce8e6; color: #d93025; display: block !important; border: 1px solid #d93025; }
@@ -22,24 +20,24 @@
 <body>
 
     <div class="card">
-        <h2>Matemáticas 2º ESO</h2>
+        <h2>Mates</h2>
         
         <div class="grupo">
-            <label>Notas de Cuaderno (10%)</label>
-            <small>Media de las notas: 8, 9, 10...</small>
-            <input type="text" id="cuaderno" placeholder="Ej: 7, 8">
+            <label>Cuaderno (10%)</label>
+            <small>Media de las notas (ej: 9, 9)</small>
+            <input type="text" id="cuaderno" placeholder="Notas separadas por comas">
         </div>
         
         <div class="grupo">
-            <label>Exámenes Parciales (15% cada uno)</label>
-            <small>Cada nota cuenta un 15%: 5, 7, 6...</small>
-            <input type="text" id="parciales" placeholder="Ej: 6, 4.5">
+            <label>Parciales</label>
+            <small>Cada examen cuenta un 15% (ej: 6, 4)</small>
+            <input type="text" id="parciales" placeholder="Notas separadas por comas">
         </div>
         
         <div class="grupo">
             <label>Examen Trimestral</label>
-            <small>Introduce la nota del examen final</small>
-            <input type="text" id="trimestral" placeholder="Ej: 7">
+            <small>El resto del porcentaje (ej: 3.75)</small>
+            <input type="text" id="trimestral" placeholder="Nota del examen">
         </div>
 
         <button onclick="calcular()">Calcular Nota Final</button>
@@ -49,36 +47,35 @@
 
     <script>
         function procesarNotas(id) {
-            const texto = document.getElementById(id).value;
+            const texto = document.getElementById(id).value.replace(',', '.'); // Cambia coma decimal por punto
             return texto.split(',')
                         .map(n => parseFloat(n.trim()))
                         .filter(n => !isNaN(n));
         }
 
         function calcular() {
-            // 1. Media de Cuaderno
+            // 1. Cuaderno (10%)
             const notasCuaderno = procesarNotas('cuaderno');
             const mediaCuaderno = notasCuaderno.length > 0 ? 
                 (notasCuaderno.reduce((a, b) => a + b, 0) / notasCuaderno.length) : 0;
+            const puntosCuaderno = mediaCuaderno * 0.10;
             
-            // 2. Suma de Parciales (15% cada uno)
+            // 2. Parciales (15% cada uno fijo)
             const notasParciales = procesarNotas('parciales');
             const puntosParciales = notasParciales.reduce((acc, nota) => acc + (nota * 0.15), 0);
 
-            // 3. Trimestral (Calculamos cuánto peso queda)
-            // Si hay 3 parciales (45%) + cuaderno (10%) = 55%. El trimestral valdría 45%
+            // 3. Trimestral (Peso variable para llegar al 100%)
             const pesoOcupado = 0.10 + (notasParciales.length * 0.15);
-            const pesoTrimestral = Math.max(0, 1 - pesoOcupado);
+            const pesoTrimestral = 1 - pesoOcupado;
             
-            const notaTrimestral = parseFloat(document.getElementById('trimestral').value) || 0;
+            const valorTrimestral = document.getElementById('trimestral').value.replace(',', '.');
+            const notaTrimestral = parseFloat(valorTrimestral) || 0;
             const puntosTrimestral = notaTrimestral * pesoTrimestral;
 
-            // Nota Final
-            const notaFinal = (mediaCuaderno * 0.10) + puntosParciales + puntosTrimestral;
+            const notaFinal = puntosCuaderno + puntosParciales + puntosTrimestral;
 
             const divRes = document.getElementById('resultado');
-            divRes.innerHTML = `Nota Final: ${notaFinal.toFixed(2)}<br><small style="font-size:0.6em">Cuaderno: 10% | Parciales: ${notasParciales.length * 15}% | Trimestral: ${(pesoTrimestral * 100).toFixed(0)}%</small>`;
-            
+            divRes.innerHTML = `Nota Final: ${notaFinal.toFixed(2)}`;
             divRes.className = notaFinal >= 5 ? 'aprobado' : 'suspenso';
         }
     </script>
