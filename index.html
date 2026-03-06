@@ -2,17 +2,16 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mates - Calculadora</title>
+    <title>Calculadora Mates</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f0f2f5; display: flex; justify-content: center; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
         h2 { color: #1a73e8; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-top: 0; }
         .grupo { margin-bottom: 20px; }
         label { display: block; font-weight: bold; margin-bottom: 8px; color: #444; }
-        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: border-color 0.3s; }
+        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         input:focus { border-color: #1a73e8; outline: none; }
-        button { background: #1a73e8; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; transition: background 0.3s; }
-        button:hover { background: #1557b0; }
+        button { background: #1a73e8; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; }
         #resultado { margin-top: 25px; padding: 20px; border-radius: 10px; text-align: center; font-size: 1.4em; font-weight: bold; display: none; }
         .aprobado { background: #e6f4ea; color: #1e8e3e; display: block !important; border: 1px solid #1e8e3e; }
         .suspenso { background: #fce8e6; color: #d93025; display: block !important; border: 1px solid #d93025; }
@@ -47,30 +46,28 @@
     function procesarNotas(id) {
         const input = document.getElementById(id).value.trim();
         if (!input) return [];
-        // Separa por espacios y permite comas/puntos para decimales
-        return input.split(/\s+/)
-                    .map(n => parseFloat(n.replace(',', '.')))
-                    .filter(n => !isNaN(n));
+        // Separar por espacios, permite usar punto o coma para decimales
+        return input.split(/\s+/).map(n => parseFloat(n.replace(',', '.'))).filter(n => !isNaN(n));
     }
 
     function calcular() {
-        const notasCuaderno = procesarNotas('cuaderno');
-        const notasParciales = procesarNotas('parciales');
-        const notasTrimestral = procesarNotas('trimestral');
+        const cuaderno = procesarNotas('cuaderno');
+        const parciales = procesarNotas('parciales');
+        const trimestral = procesarNotas('trimestral');
 
-        // Cálculo basado en tus reglas (10%, 15% y 50%)
-        const puntosCuaderno = notasCuaderno.reduce((acc, n) => acc + (n * 0.10), 0);
-        const puntosParciales = notasParciales.reduce((acc, n) => acc + (n * 0.15), 0);
+        // REGLAS: 10% cada cuaderno, 15% cada parcial, 50% trimestral
+        const puntosCuaderno = cuaderno.reduce((acc, n) => acc + (n * 0.10), 0);
+        const puntosParciales = parciales.reduce((acc, n) => acc + (n * 0.15), 0);
         
-        const notaTrim = notasTrimestral.length > 0 ? notasTrimestral[0] : 0;
-        const puntosTrimestral = notaTrim * 0.50;
+        const notaFinalTrim = trimestral.length > 0 ? trimestral[0] : 0;
+        const puntosTrimestral = notaFinalTrim * 0.50;
 
-        const notaFinal = puntosCuaderno + puntosParciales + puntosTrimestral;
+        const total = puntosCuaderno + puntosParciales + puntosTrimestral;
 
         const divRes = document.getElementById('resultado');
         divRes.style.display = 'block';
-        divRes.innerHTML = `Nota Final: ${notaFinal.toFixed(2)}`;
-        divRes.className = notaFinal >= 5 ? 'aprobado' : 'suspenso';
+        divRes.innerHTML = `Nota Final: ${total.toFixed(2)}`;
+        divRes.className = total >= 5 ? 'aprobado' : 'suspenso';
     }
 </script>
 
