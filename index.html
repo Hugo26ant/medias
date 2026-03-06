@@ -1,37 +1,37 @@
 function procesarNotas(id) {
-    const input = document.getElementById(id).value;
-    // 1. Reemplazamos comas por puntos para los decimales
-    // 2. Dividimos por espacios o cualquier carácter que no sea número/punto para separar notas
-    const partes = input.split(/[\s,]+/); 
-    
-    return partes
-        .map(n => parseFloat(n))
-        .filter(n => !isNaN(n));
+    const input = document.getElementById(id).value.trim();
+    if (!input) return [];
+
+    // 1. Separamos por ESPACIOS para identificar notas diferentes
+    // 2. En cada nota, cambiamos la coma por punto para que sea decimal válido
+    return input.split(/\s+/) 
+                .map(n => parseFloat(n.replace(',', '.')))
+                .filter(n => !isNaN(n));
 }
 
 function calcular() {
-    // REGLAS:
-    // Cuaderno: 10% cada nota (Nota * 0.10)
-    // Parciales: 15% cada nota (Nota * 0.15)
-    // Trimestral: 50% nota única (Nota * 0.50)
-
     const notasCuaderno = procesarNotas('cuaderno');
     const notasParciales = procesarNotas('parciales');
-    
-    // El trimestral es único, cogemos solo la primera nota por si acaso
     const notasTrimestral = procesarNotas('trimestral');
-    const notaTrimestral = notasTrimestral.length > 0 ? notasTrimestral[0] : 0;
 
-    // Cálculo de puntos acumulados
-    const puntosCuaderno = notasCuaderno.reduce((acc, nota) => acc + (nota * 0.10), 0);
-    const puntosParciales = notasParciales.reduce((acc, nota) => acc + (nota * 0.15), 0);
+    // REGLA: 10% (0.10) por CADA nota de cuaderno
+    const puntosCuaderno = notasCuaderno.reduce((acc, n) => acc + (n * 0.10), 0);
+
+    // REGLA: 15% (0.15) por CADA nota de parcial
+    const puntosParciales = notasParciales.reduce((acc, n) => acc + (n * 0.15), 0);
+
+    // REGLA: 50% (0.50) de la nota del trimestral (solo la primera)
+    const notaTrimestral = notasTrimestral.length > 0 ? notasTrimestral[0] : 0;
     const puntosTrimestral = notaTrimestral * 0.50;
 
+    // Suma total
     const notaFinal = puntosCuaderno + puntosParciales + puntosTrimestral;
 
     // Mostrar resultado
     const divRes = document.getElementById('resultado');
-    // Limitamos a 10 por si el usuario pone demasiadas notas, o lo dejamos libre
+    divRes.style.display = 'block';
     divRes.innerHTML = `Nota Final: ${notaFinal.toFixed(2)}`;
+    
+    // Colores: Verde si es >= 5, rojo si es < 5
     divRes.className = notaFinal >= 5 ? 'aprobado' : 'suspenso';
 }
